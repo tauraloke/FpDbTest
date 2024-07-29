@@ -1,0 +1,24 @@
+version: "3.9"
+services:
+  mysql_db:
+    image: mysql:8
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: database
+      MYSQL_USER: example
+      MYSQL_PASSWORD: secret2
+    volumes:
+      - ./dbdata:/var/lib/mysql/
+  web:
+    build: .
+    volumes:
+      - .:/app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mysql_db
+volumes:
+  mysql_db:
