@@ -88,30 +88,30 @@ class Database implements DatabaseInterface
         $currentCursor = 0;
         $positionsToSkipCondition = [];
 
-
         foreach ($tokens as $key => $token) {
             $currentCursor += strlen($token);
-            if (isset($specifierSchema[$token])) { // current token is control
-                if (!isset($substutues[$subCounter])) {
-                    throw new ParseException(
-                        'Not enough arguments for the expression!'
-                    );
-                }
+            if (!isset($specifierSchema[$token])) {
+                // current token isn't control
+                continue;
+            }
+            if (!isset($substutues[$subCounter])) {
+                throw new ParseException(
+                    'Not enough arguments for the expression!'
+                );
+            }
                 $argClassType = $substutues[$subCounter]->getType();
-                if (!in_array($argClassType, $specifierSchema[$token]['allowed_types'])) {
-                    throw new SpecifierTypeException(
-                        "Forbidden type {$argClassType} for specifier {$token}"
-                    );
-                }
+            if (!in_array($argClassType, $specifierSchema[$token]['allowed_types'])) {
+                throw new SpecifierTypeException(
+                    "Forbidden type {$argClassType} for specifier {$token}"
+                );
+            }
                 $tokens[$key] = $substutues[$subCounter]->serialize(
                     $specifierSchema[$token]['quote']
                 );
-                if ($substutues[$subCounter]->isSkipping()) {
-                    $positionsToSkipCondition[] = $currentCursor;
-                }
-                $subCounter++;
-                continue;
+            if ($substutues[$subCounter]->isSkipping()) {
+                $positionsToSkipCondition[] = $currentCursor;
             }
+                $subCounter++;
         }
         $result = join('', $tokens);
 
@@ -182,15 +182,15 @@ class Database implements DatabaseInterface
     private function cutFreeConditions(string $str): string
     {
         $letters = [];
-        $startbrackets = false;
+        $startBrackets = false;
         $startQuote = false;
         for ($i = 0; $i < strlen($str); $i++) {
-            if ($str[$i] === '{' && !$startbrackets && !$startQuote) {
-                $startbrackets = true;
+            if ($str[$i] === '{' && !$startBrackets && !$startQuote) {
+                $startBrackets = true;
                 continue;
             }
-            if ($str[$i] === '}' && $startbrackets && !$startQuote) {
-                $startbrackets = false;
+            if ($str[$i] === '}' && $startBrackets && !$startQuote) {
+                $startBrackets = false;
                 continue;
             }
             if ($str[$i] === "'") {
